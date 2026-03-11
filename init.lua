@@ -1,4 +1,16 @@
 local FORMNAME = "trashbin:trash_gui"
+local OPEN_SOUND = "default_chest_open"
+local TRASH_SOUND = "default_cool_lava"
+
+local function play_sound_to(player_name, sound_name, gain)
+    if not player_name or player_name == "" then
+        return
+    end
+    minetest.sound_play(sound_name, {
+        to_player = player_name,
+        gain = gain or 0.4,
+    })
+end
 
 local function inv_name(player_name)
     return "trashbin:trash_" .. player_name
@@ -30,6 +42,7 @@ local function ensure_inv(player_name)
         end,
         on_put = function(invref, listname, index)
             invref:set_stack(listname, index, "")
+            play_sound_to(player_name, TRASH_SOUND, 0.45)
         end,
     })
     inv:set_size("main", 1)
@@ -42,8 +55,6 @@ local function show_gui(player)
     local fs = table.concat({
         "formspec_version[4]",
         "size[12.0,9.2]",
-        "bgcolor[#0f0f15dd;true]",
-        "box[0.2,0.2;11.6,8.8;#1a1a24cc]",
         "label[0.5,0.5;Trash]",
         "label[0.5,0.9;Drop items here to delete them permanently.]",
         "list[detached:" .. detached .. ";main;5.5,2.0;1,1;]",
@@ -53,6 +64,7 @@ local function show_gui(player)
         "button_exit[10.4,0.4;1.0,0.7;close;Close]",
     })
     minetest.show_formspec(pname, FORMNAME, fs)
+    play_sound_to(pname, OPEN_SOUND, 0.35)
 end
 
 local function register_open_command(cmd, description)
@@ -71,6 +83,8 @@ end
 
 register_open_command("bin", "Open trash bin (deletes items)")
 register_open_command("trash", "Alias for /bin")
+register_open_command("trashbin", "Alias for /bin")
+register_open_command("trashcan", "Alias for /bin")
 
 minetest.register_on_player_receive_fields(function(player, formname, fields)
     if formname ~= FORMNAME then
